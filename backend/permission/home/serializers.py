@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import *
+import uuid
 class RegistrationSerializer(serializers.ModelSerializer):
+    id=uuid.uuid4()
     password = serializers.CharField(write_only = True)
     role = serializers.ChoiceField(choices=User.ROLES_CHOICES) # help in validating the choices , the user selects out of the  provided choices not anyother 
     admin_code = serializers.CharField(required = False , allow_blank=True)
@@ -15,6 +17,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            'id'
             'username',
             'email',
             'password',
@@ -40,6 +43,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         
         
         return data
+    
+
     def create(self, validated_data):
         role = validated_data.pop('role')
         profile_data = {
@@ -54,6 +59,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         }
         user = User.objects.create_user(**validated_data , role=role)
+        
         if role =='admin':
             AdminProfile.objects.create(
                 user = user,
@@ -76,6 +82,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
             )
         return user
+    
 
 
     
@@ -94,6 +101,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             elif instance.role=='staff':
                 data['profile']= StaffProfile.objects.filter(user = instance).values().first()
             return data
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
             
             
             
